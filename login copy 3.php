@@ -77,6 +77,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     case 'Data Entrant':
                         $redirectUrl = "entrant/home.php";
                         break;
+                       case 'School':
+                        $redirectUrl = "school/index.php";
+                        break;
                     default:
                         $redirectUrl = "index.php";
                         break;

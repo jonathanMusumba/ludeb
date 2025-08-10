@@ -10,7 +10,7 @@ session_regenerate_id(true);
 $servername = "localhost";
 $username = "root";
 $password = "";
-$dbname = "LUDEB";
+$dbname = "ludeb";
 
 try {
     $conn = new mysqli($servername, $username, $password, $dbname);

@@ -1364,7 +1364,6 @@ CREATE TABLE `resources` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
-
 CREATE TABLE `user_resource_access` (
   `id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
@@ -1374,4 +1373,34 @@ CREATE TABLE `user_resource_access` (
   `expires_at` timestamp NULL DEFAULT NULL,
   `download_count` int(11) DEFAULT 0,
   `max_downloads` int(11) DEFAULT 5
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE `audit_logs` (
+  `id` int(11) NOT NULL,
+  `action` varchar(255) NOT NULL,
+  `user_id` int(11) DEFAULT NULL,
+  `details` text DEFAULT NULL,
+  `created_at` datetime DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE `system_users` (
+  `id` int(11) NOT NULL,
+  `username` varchar(255) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `role` enum('System Admin','Examination Administrator','Data Entrant','School') NOT NULL,
+  `school_id` int(11) DEFAULT NULL,
+  `status` enum('Active','Invalid') DEFAULT 'Active',
+  `last_login` datetime DEFAULT NULL,
+  `locked_until` datetime DEFAULT NULL,
+  `password_reset_token` varchar(255) DEFAULT NULL,
+  `password_reset_expires` datetime DEFAULT NULL,
+  `created_at` datetime DEFAULT current_timestamp(),
+  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `failed_login_attempts` int(11) DEFAULT 0,
+  `last_login_ip` varchar(45) DEFAULT NULL,
+  `password_changed_at` datetime DEFAULT current_timestamp(),
+  `must_change_password` tinyint(1) DEFAULT 0,
+  `two_factor_enabled` tinyint(1) DEFAULT 0,
+  `two_factor_secret` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
