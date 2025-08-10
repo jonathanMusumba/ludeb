@@ -855,11 +855,17 @@ $current_year = date('Y');
                     <li class="nav-item">
                         <a class="nav-link" href="#contact">Contact</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link btn btn-outline-warning ms-2" href="../login.php" style="border-radius: 20px;">
-                            <i class="fas fa-sign-in-alt me-1"></i>
-                            School Login
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user me-1"></i>
+                            Account
                         </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="register.php"><i class="fas fa-user-plus me-2"></i>Register</a></li>
+                            <li><a class="dropdown-item" href="login.php"><i class="fas fa-sign-in-alt me-2"></i>Login</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="../login.php"><i class="fas fa-school me-2"></i>School Portal</a></li>
+                        </ul>
                     </li>
                 </ul>
             </div>
@@ -1198,7 +1204,196 @@ $current_year = date('Y');
                             with tools and resources designed to support academic excellence and administrative efficiency.
                         </p>
                         <div class="row g-3">
-                            <div class="col-md-6 text-md-end text-center">
+                            <div class="col-sm-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-check-circle text-success me-2"></i>
+                                    <span>Quality Assured Content</span>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-check-circle text-success me-2"></i>
+                                    <span>Regular Updates</span>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-check-circle text-success me-2"></i>
+                                    <span>Curriculum Aligned</span>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-check-circle text-success me-2"></i>
+                                    <span>Expert Reviewed</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="animate-on-scroll text-center">
+                        <div class="p-4" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 20px;">
+                            <i class="fas fa-graduation-cap" style="font-size: 5rem; color: var(--accent-blue); margin-bottom: 1rem;"></i>
+                            <h4 class="mb-3">Join Thousands of Learners</h4>
+                            <p class="text-muted">
+                                Experience quality education with our comprehensive resource library and 
+                                innovative learning tools designed for success.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quick Access Section -->
+    <section class="py-5" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+        <div class="container">
+            <div class="text-center animate-on-scroll">
+                <h2 class="mb-4">Quick Access Tools</h2>
+                <div class="row g-4">
+                    <div class="col-lg-3 col-md-6">
+                        <a href="tools/calculator" class="text-decoration-none text-white">
+                            <div class="p-4 rounded" style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); transition: all 0.3s ease;">
+                                <i class="fas fa-calculator fa-3x mb-3"></i>
+                                <h5>Grade Calculator</h5>
+                                <p class="small mb-0">Calculate your grades and GPA</p>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <a href="tools/timetable" class="text-decoration-none text-white">
+                            <div class="p-4 rounded" style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); transition: all 0.3s ease;">
+                                <i class="fas fa-calendar-alt fa-3x mb-3"></i>
+                                <h5>Study Timetable</h5>
+                                <p class="small mb-0">Create personalized study schedules</p>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <a href="tools/progress" class="text-decoration-none text-white">
+                            <div class="p-4 rounded" style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); transition: all 0.3s ease;">
+                                <i class="fas fa-chart-line fa-3x mb-3"></i>
+                                <h5>Progress Tracker</h5>
+                                <p class="small mb-0">Monitor your learning progress</p>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <a href="tools/subjects" class="text-decoration-none text-white">
+                            <div class="p-4 rounded" style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); transition: all 0.3s ease;">
+                                <i class="fas fa-list-alt fa-3x mb-3"></i>
+                                <h5>Subject Guide</h5>
+                                <p class="small mb-0">Explore curriculum requirements</p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-5" style="background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%); color: white;">
+        <div class="container text-center">
+            <div class="animate-on-scroll">
+                <h2 class="mb-4">Ready to Start Learning?</h2>
+                <p class="lead mb-4">
+                    Join thousands of students and educators who trust our platform for their educational journey
+                </p>
+                <div class="d-flex gap-3 justify-content-center flex-wrap">
+                    <a href="register.php" class="btn-primary-custom">
+                        <i class="fas fa-user-plus"></i>
+                        Create Free Account
+                    </a>
+                    <a href="login.php" class="btn-outline-primary-custom" style="border-color: white; color: white;">
+                        <i class="fas fa-sign-in-alt"></i>
+                        Login to Account
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer" id="contact">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 col-md-6">
+                    <div class="footer-section">
+                        <h4 class="footer-title">
+                            <i class="fas fa-graduation-cap me-2"></i>
+                            <?php echo htmlspecialchars($board_name); ?>
+                        </h4>
+                        <p style="color: #adb5bd; line-height: 1.6; margin-bottom: 1.5rem;">
+                            Leading provider of educational services, examination management, and comprehensive 
+                            school solutions across Uganda.
+                        </p>
+                        <div class="contact-info">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>Kampala, Central Region, Uganda</span>
+                        </div>
+                        <div class="contact-info">
+                            <i class="fas fa-globe"></i>
+                            <span>Serving Uganda's Educational Community</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-2 col-md-6">
+                    <div class="footer-section">
+                        <h5 class="footer-title">Resources</h5>
+                        <a href="resources/primary" class="footer-link">Primary Resources</a>
+                        <a href="resources/secondary" class="footer-link">Secondary Resources</a>
+                        <a href="resources/past-papers" class="footer-link">Past Papers</a>
+                        <a href="resources/study-guides" class="footer-link">Study Guides</a>
+                        <a href="resources/videos" class="footer-link">Video Lessons</a>
+                    </div>
+                </div>
+                
+                <div class="col-lg-3 col-md-6">
+                    <div class="footer-section">
+                        <h5 class="footer-title">Services</h5>
+                        <a href="results/ple" class="footer-link">PLE Results</a>
+                        <a href="results/uce" class="footer-link">UCE Results</a>
+                        <a href="results/uace" class="footer-link">UACE Results</a>
+                        <a href="../login.php" class="footer-link">School Portal</a>
+                        <a href="about.php" class="footer-link">About Us</a>
+                    </div>
+                </div>
+                
+                <div class="col-lg-3 col-md-6">
+                    <div class="footer-section">
+                        <h5 class="footer-title">Contact Information</h5>
+                        <div class="contact-info">
+                            <i class="fas fa-phone"></i>
+                            <span>+256 777 115 678</span>
+                        </div>
+                        <div class="contact-info">
+                            <i class="fas fa-envelope"></i>
+                            <span>jmprossy@gmail.com</span>
+                        </div>
+                        <div class="contact-info">
+                            <i class="fas fa-clock"></i>
+                            <span>Mon - Fri: 8:00 AM - 6:00 PM</span>
+                        </div>
+                        <div class="contact-info">
+                            <i class="fas fa-calendar"></i>
+                            <span>Academic Year <?php echo $current_year; ?></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <div class="row align-items-center">
+                    <div class="col-md-6 text-md-start text-center">
+                        <p class="mb-0">
+                            &copy; <?php echo $current_year; ?> <?php echo htmlspecialchars($board_name); ?>. All rights reserved.
+                        </p>
+                    </div>
+                    <div class="col-md-6 text-md-end text-center">
                         <p class="mb-0">
                             <i class="fas fa-code me-1"></i>
                             Developed by <strong>ILABS UGANDA LIMITED</strong>
@@ -1445,6 +1640,8 @@ $current_year = date('Y');
         const preloadLinks = [
             'resources/primary',
             'resources/secondary',
+            'register.php',
+            'login.php',
             '../login.php'
         ];
 
@@ -1527,197 +1724,4 @@ $current_year = date('Y');
         sessionStorage.setItem('session_start', new Date().toISOString());
     </script>
 </body>
-</html>-sm-6">
-                                <div class="d-flex align-items-center">
-                                    <i class="fas fa-check-circle text-success me-2"></i>
-                                    <span>Quality Assured Content</span>
-                                </div>
-                            </div>
-                            <div class="col-sm-6">
-                                <div class="d-flex align-items-center">
-                                    <i class="fas fa-check-circle text-success me-2"></i>
-                                    <span>Regular Updates</span>
-                                </div>
-                            </div>
-                            <div class="col-sm-6">
-                                <div class="d-flex align-items-center">
-                                    <i class="fas fa-check-circle text-success me-2"></i>
-                                    <span>Curriculum Aligned</span>
-                                </div>
-                            </div>
-                            <div class="col-sm-6">
-                                <div class="d-flex align-items-center">
-                                    <i class="fas fa-check-circle text-success me-2"></i>
-                                    <span>Expert Reviewed</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-6">
-                    <div class="animate-on-scroll text-center">
-                        <div class="p-4" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 20px;">
-                            <i class="fas fa-graduation-cap" style="font-size: 5rem; color: var(--accent-blue); margin-bottom: 1rem;"></i>
-                            <h4 class="mb-3">Join Thousands of Learners</h4>
-                            <p class="text-muted">
-                                Experience quality education with our comprehensive resource library and 
-                                innovative learning tools designed for success.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Quick Access Section -->
-    <section class="py-5" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
-        <div class="container">
-            <div class="text-center animate-on-scroll">
-                <h2 class="mb-4">Quick Access Tools</h2>
-                <div class="row g-4">
-                    <div class="col-lg-3 col-md-6">
-                        <a href="tools/calculator" class="text-decoration-none text-white">
-                            <div class="p-4 rounded" style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); transition: all 0.3s ease;">
-                                <i class="fas fa-calculator fa-3x mb-3"></i>
-                                <h5>Grade Calculator</h5>
-                                <p class="small mb-0">Calculate your grades and GPA</p>
-                            </div>
-                        </a>
-                    </div>
-                    <div class="col-lg-3 col-md-6">
-                        <a href="tools/timetable" class="text-decoration-none text-white">
-                            <div class="p-4 rounded" style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); transition: all 0.3s ease;">
-                                <i class="fas fa-calendar-alt fa-3x mb-3"></i>
-                                <h5>Study Timetable</h5>
-                                <p class="small mb-0">Create personalized study schedules</p>
-                            </div>
-                        </a>
-                    </div>
-                    <div class="col-lg-3 col-md-6">
-                        <a href="tools/progress" class="text-decoration-none text-white">
-                            <div class="p-4 rounded" style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); transition: all 0.3s ease;">
-                                <i class="fas fa-chart-line fa-3x mb-3"></i>
-                                <h5>Progress Tracker</h5>
-                                <p class="small mb-0">Monitor your learning progress</p>
-                            </div>
-                        </a>
-                    </div>
-                    <div class="col-lg-3 col-md-6">
-                        <a href="tools/subjects" class="text-decoration-none text-white">
-                            <div class="p-4 rounded" style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); transition: all 0.3s ease;">
-                                <i class="fas fa-list-alt fa-3x mb-3"></i>
-                                <h5>Subject Guide</h5>
-                                <p class="small mb-0">Explore curriculum requirements</p>
-                            </div>
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- CTA Section -->
-    <section class="py-5" style="background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%); color: white;">
-        <div class="container text-center">
-            <div class="animate-on-scroll">
-                <h2 class="mb-4">Ready to Start Learning?</h2>
-                <p class="lead mb-4">
-                    Join thousands of students and educators who trust our platform for their educational journey
-                </p>
-                <div class="d-flex gap-3 justify-content-center flex-wrap">
-                    <a href="register.php" class="btn-primary-custom">
-                        <i class="fas fa-user-plus"></i>
-                        Create Free Account
-                    </a>
-                    <a href="../login.php" class="btn-outline-primary-custom" style="border-color: white; color: white;">
-                        <i class="fas fa-sign-in-alt"></i>
-                        School Portal Access
-                    </a>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="footer" id="contact">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-4 col-md-6">
-                    <div class="footer-section">
-                        <h4 class="footer-title">
-                            <i class="fas fa-graduation-cap me-2"></i>
-                            <?php echo htmlspecialchars($board_name); ?>
-                        </h4>
-                        <p style="color: #adb5bd; line-height: 1.6; margin-bottom: 1.5rem;">
-                            Leading provider of educational services, examination management, and comprehensive 
-                            school solutions across Uganda.
-                        </p>
-                        <div class="contact-info">
-                            <i class="fas fa-map-marker-alt"></i>
-                            <span>Kampala, Central Region, Uganda</span>
-                        </div>
-                        <div class="contact-info">
-                            <i class="fas fa-globe"></i>
-                            <span>Serving Uganda's Educational Community</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="col-lg-2 col-md-6">
-                    <div class="footer-section">
-                        <h5 class="footer-title">Resources</h5>
-                        <a href="resources/primary" class="footer-link">Primary Resources</a>
-                        <a href="resources/secondary" class="footer-link">Secondary Resources</a>
-                        <a href="resources/past-papers" class="footer-link">Past Papers</a>
-                        <a href="resources/study-guides" class="footer-link">Study Guides</a>
-                        <a href="resources/videos" class="footer-link">Video Lessons</a>
-                    </div>
-                </div>
-                
-                <div class="col-lg-3 col-md-6">
-                    <div class="footer-section">
-                        <h5 class="footer-title">Services</h5>
-                        <a href="results/ple" class="footer-link">PLE Results</a>
-                        <a href="results/uce" class="footer-link">UCE Results</a>
-                        <a href="results/uace" class="footer-link">UACE Results</a>
-                        <a href="../login.php" class="footer-link">School Portal</a>
-                        <a href="about.php" class="footer-link">About Us</a>
-                    </div>
-                </div>
-                
-                <div class="col-lg-3 col-md-6">
-                    <div class="footer-section">
-                        <h5 class="footer-title">Contact Information</h5>
-                        <div class="contact-info">
-                            <i class="fas fa-phone"></i>
-                            <span>+256 777 115 678</span>
-                        </div>
-                        <div class="contact-info">
-                            <i class="fas fa-envelope"></i>
-                            <span>jmprossy@gmail.com</span>
-                        </div>
-                        <div class="contact-info">
-                            <i class="fas fa-clock"></i>
-                            <span>Mon - Fri: 8:00 AM - 6:00 PM</span>
-                        </div>
-                        <div class="contact-info">
-                            <i class="fas fa-calendar"></i>
-                            <span>Academic Year <?php echo $current_year; ?></span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="footer-bottom">
-                <div class="row align-items-center">
-                    <div class="col-md-6 text-md-start text-center">
-                        <p class="mb-0">
-                            &copy; <?php echo $current_year; ?> <?php echo htmlspecialchars($board_name); ?>. All rights reserved.
-                        </p>
-                    </div>
-                    <div class="col-md-6 text-md-end text-center">
-                        <p class="mb-0">
-                            <a href="privacy.php" class="footer-link">Privacy Policy</a> | 
-                            <a href="terms.php" class="footer-link">Terms of Service</a>
-                        </p>
+</html>

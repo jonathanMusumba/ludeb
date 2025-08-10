@@ -7719,3 +7719,4 @@ Stack trace:
 [31-Jul-2025 13:35:49 Europe/Berlin] Mark correction error: Unknown column 'description' in 'field list'
 [31-Jul-2025 13:35:49 Europe/Berlin] Logging error in audit_logs: Unknown column 'description' in 'field list'
 Unauthorized access attempt, User ID: Not setDB Connection Error: Database connection failed: No connection could be made because the target machine actively refused it.
+Unauthorized access attempt, User ID: Not set
