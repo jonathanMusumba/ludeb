@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-time Chat</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script> <!-- Ensure this loads correctly -->
+    <style>
+        #messages { list-style-type: none; padding: 0; }
+        #messages li { padding: 8px; margin-bottom: 2px; background-color: #f3f3f3; }
+        .notification-sound { display: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Real-time Chat</h1>
+        <select id="room" class="form-control mb-3">
+            <option value="general">General</option>
+            <option value="admin">Admin</option>
+        </select>
+        <ul id="messages"></ul>
+        <form id="form" action="">
+            <input id="input" class="form-control" autocomplete="off" />
+            <button class="btn btn-primary mt-2">Send</button>
+        </form>
+    </div>
+
+    <audio id="notification-sound" class="notification-sound">
+        <source src="https://www.soundjay.com/button/beep-07.wav" type="audio/wav">
+    </audio>
+
+    <script>
+        $(function () {
+            var socket = io(); // This will connect to the Ngrok URL
+
+            var currentRoom = $('#room').val();
+
+            $('#room').change(function() {
+                socket.emit('join', $(this).val());
+                currentRoom = $(this).val();
+            });
+
+            $('form').submit(function() {
+                socket.emit('message', { room: currentRoom, message: $('#input').val() });
+                $('#input').val('');
+                return false;
+            });
+
+            socket.on('message', function(data) {
+                $('#messages').append($('<li>').text(data));
+                var audio = document.getElementById('notification-sound');
+                audio.play();
+                if (Notification.permission === 'granted') {
+                    new Notification('New message!', { body: data });
+                } else if (Notification.permission !== 'denied') {
+                    Notification.requestPermission().then(permission => {
+                        if (permission === 'granted') {
+                            new Notification('New message!', { body: data });
+                        }
+                    });
+                }
+            });
+
+            socket.emit('join', currentRoom);
+        });
+    </script>
+</body>
+</html>

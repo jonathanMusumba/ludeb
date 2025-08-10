@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Form</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f7f7f7;
+        }
+        .login-form {
+            width: 100%;
+            max-width: 360px;
+            padding: 15px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .caps-lock-warning, .email-warning, .username-warning, .password-strength {
+            display: none;
+            color: red;
+        }
+        .password-strength.strong {
+            color: green;
+        }
+        .password-strength.weak {
+            color: red;
+        }
+        .password-strength.excellent {
+            color: blue;
+        }
+        .signup-link, .forgot-password-link {
+            display: block;
+            margin-top: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-form">
+        <h2 class="text-center">Login</h2>
+        <div class="caps-lock-warning" id="caps-lock-warning">Caps Lock is on</div>
+        <div class="email-warning" id="email-warning">Please enter a valid email address</div>
+        <div class="username-warning" id="username-warning">Username should not contain special characters</div>
+        <div class="password-strength" id="password-strength"></div>
+        <form id="login-form" method="POST" action="signin_process.php">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" class="form-control" id="username" name="username" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email address</label>
+                <input type="email" class="form-control" id="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" class="form-control" id="password" name="password" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Login</button>
+        </form>
+        <a href="signup.html" class="signup-link">Sign Up</a>
+        <a href="forgot.html" class="forgot-password-link">Forgot Password?</a>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const passwordField = document.getElementById('password');
+            const capsLockWarning = document.getElementById('caps-lock-warning');
+            const emailField = document.getElementById('email');
+            const emailWarning = document.getElementById('email-warning');
+            const usernameField = document.getElementById('username');
+            const usernameWarning = document.getElementById('username-warning');
+            const passwordStrength = document.getElementById('password-strength');
+            
+            // Caps Lock warning
+            passwordField.addEventListener('keyup', function (e) {
+                const isCapsLockOn = e.getModifierState('CapsLock');
+                capsLockWarning.style.display = isCapsLockOn ? 'block' : 'none';
+                evaluatePasswordStrength();
+            });
+
+            // Email validation
+            emailField.addEventListener('input', function () {
+                const emailValue = emailField.value;
+                emailWarning.style.display = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailValue) ? 'none' : 'block';
+            });
+
+            // Username validation (no special characters)
+            usernameField.addEventListener('input', function () {
+                const usernameValue = usernameField.value;
+                const validUsername = /^[a-zA-Z0-9_ ]+$/.test(usernameValue);
+                usernameWarning.style.display = validUsername ? 'none' : 'block';
+            });
+
+            // Password strength evaluation
+            function evaluatePasswordStrength() {
+                const passwordValue = passwordField.value;
+                let strength = 'Weak';
+                const lengthCriteria = passwordValue.length >= 8;
+                const hasUppercase = /[A-Z]/.test(passwordValue);
+                const hasLowercase = /[a-z]/.test(passwordValue);
+                const hasNumber = /[0-9]/.test(passwordValue);
+                const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(passwordValue);
+
+                if (lengthCriteria && hasUppercase && hasLowercase && hasNumber && hasSpecial) {
+                    strength = 'Excellent';
+                } else if (lengthCriteria && (hasUppercase || hasLowercase) && (hasNumber || hasSpecial)) {
+                    strength = 'Strong';
+                }
+
+                passwordStrength.textContent = `Password strength: ${strength}`;
+                passwordStrength.className = `password-strength ${strength.toLowerCase()}`;
+                passwordStrength.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>

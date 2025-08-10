@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .signup-form {
+            width: 100%;
+            max-width: 500px;
+            padding: 15px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin: auto;
+            margin-top: 50px;
+        }
+        .password-strength {
+            display: block;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="signup-form">
+        <h2 class="text-center">Sign Up</h2>
+        <form id="signup-form" method="POST" action="signup_process.php">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" class="form-control" id="username" name="username" required>
+                <div class="username-warning" id="username-warning">Username should not contain special characters</div>
+            </div>
+            <div class="form-group">
+                <label for="email">Email address</label>
+                <input type="email" class="form-control" id="email" name="email" required>
+                <div class="email-warning" id="email-warning">Please enter a valid email address</div>
+            </div>
+            <div class="form-group">
+                <label for="role">Role</label>
+                <select class="form-control" id="role" name="role" required>
+                    <option value="admin">Admin</option>
+                    <option value="accountant">Accountant</option>
+                    <option value="teacher">Teacher</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" class="form-control" id="password" name="password" required>
+                <div class="password-strength" id="password-strength"></div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Sign Up</button>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const passwordField = document.getElementById('password');
+            const usernameField = document.getElementById('username');
+            const emailField = document.getElementById('email');
+            const usernameWarning = document.getElementById('username-warning');
+            const emailWarning = document.getElementById('email-warning');
+            const passwordStrength = document.getElementById('password-strength');
+            
+            // Username validation
+            usernameField.addEventListener('input', function () {
+                const usernameValue = usernameField.value;
+                const validUsername = /^[a-zA-Z0-9_ ]+$/.test(usernameValue);
+                usernameWarning.style.display = validUsername ? 'none' : 'block';
+            });
+
+            // Email validation
+            emailField.addEventListener('input', function () {
+                const emailValue = emailField.value;
+                emailWarning.style.display = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailValue) ? 'none' : 'block';
+            });
+
+            // Password strength evaluation
+            passwordField.addEventListener('keyup', function () {
+                const passwordValue = passwordField.value;
+                let strength = 'Weak';
+                const lengthCriteria = passwordValue.length >= 8;
+                const hasUppercase = /[A-Z]/.test(passwordValue);
+                const hasLowercase = /[a-z]/.test(passwordValue);
+                const hasNumber = /[0-9]/.test(passwordValue);
+                const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(passwordValue);
+
+                if (lengthCriteria && hasUppercase && hasLowercase && hasNumber && hasSpecial) {
+                    strength = 'Excellent';
+                } else if (lengthCriteria && (hasUppercase || hasLowercase) && (hasNumber || hasSpecial)) {
+                    strength = 'Strong';
+                }
+
+                passwordStrength.textContent = `Password strength: ${strength}`;
+                passwordStrength.className = `password-strength ${strength.toLowerCase()}`;
+                passwordStrength.style.display = 'block';
+            });
+        });
+    </script>
+</body>
+</html>

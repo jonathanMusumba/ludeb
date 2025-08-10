@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - UNEB Registration</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        .topbar {
+            background-color: #a1cf42;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sidebar {
+            background-color: #2b3e50;
+            min-height: 100vh;
+            color: white;
+            padding-top: 20px;
+        }
+
+        .sidebar h2 {
+            font-size: 20px;
+            text-align: center;
+        }
+
+        .sidebar ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        .sidebar ul li {
+            padding: 10px 20px;
+        }
+
+        .sidebar ul li a {
+            color: white;
+            text-decoration: none;
+        }
+
+        .sidebar ul li a:hover {
+            text-decoration: underline;
+        }
+
+        .container-fluid {
+            padding: 20px;
+        }
+
+        .card {
+            margin-bottom: 20px;
+        }
+
+        .card-header {
+            font-weight: bold;
+            background-color: #f8f9fa;
+        }
+
+        .btn-primary {
+            background-color: #28a745;
+            border-color: #28a745;
+        }
+
+        .btn-primary:hover {
+            background-color: #218838;
+            border-color: #1e7e34;
+        }
+
+        .table-responsive {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Top Bar -->
+    <div class="topbar">
+        <button class="btn btn-outline-secondary collapse-btn" type="button">
+            <i class="fas fa-bars"></i>
+        </button>
+        <div>
+            <span class="mr-3">Board Name: UNEB Registration</span>
+            <span class="mr-3">Username: LUUKA_113</span>
+            <a href="logout.php" class="btn btn-danger btn-sm">Logout</a>
+        </div>
+    </div>
+
+    <div class="d-flex">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <h2>UNEB Registration</h2>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a href="dashboard.php" class="nav-link">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#schoolsSubmenu" data-toggle="collapse" aria-expanded="false"
+                        class="dropdown-toggle nav-link">Schools</a>
+                    <ul class="collapse list-unstyled" id="schoolsSubmenu">
+                        <li class="nav-item">
+                            <a href="view_schools.php" class="nav-link">View Schools</a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a href="#resultsSubmenu" data-toggle="collapse" aria-expanded="false"
+                        class="dropdown-toggle nav-link">Results</a>
+                    <ul class="collapse list-unstyled" id="resultsSubmenu">
+                        <li class="nav-item">
+                            <a href="district_results.php" class="nav-link">District Results</a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a href="invoices.php" class="nav-link">Invoices</a>
+                </li>
+                <li class="nav-item">
+                    <a href="registration_reports.php" class="nav-link">Registration Reports</a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="container-fluid">
+            <h1>District Results - Exam Year 2023</h1>
+
+            <div class="row">
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body">
+                            <h4>104</h4>
+                            <p>Total Exam Centers</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="card bg-success text-white">
+                        <div class="card-body">
+                            <h4>96</h4>
+                            <p>With 2023 Results</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="card bg-danger text-white">
+                        <div class="card-body">
+                            <h4>8</h4>
+                            <p>Missing 2023 Results</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header">Results Summary</div>
+                        <div class="card-body">
+                            <div id="pie-chart"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header">Results by Division and Gender</div>
+                        <div class="card-body">
+                            <div id="bar-chart"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Division</th>
+                                    <th>Candidates</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Division 1</td>
+                                    <td>300</td>
+                                </tr>
+                                <tr>
+                                    <td>Division 2</td>
+                                    <td>500</td>
+                                </tr>
+                                <tr>
+                                    <td>Division 3</td>
+                                    <td>450</td>
+                                </tr>
+                                <tr>
+                                    <td>Division 4</td>
+                                    <td>200</td>
+                                </tr>
+                                <tr>
+                                    <td>Failed</td>
+                                    <td>100</td>
+                                </tr>
+                                <tr>
+                                    <td>Absentee</td>
+                                    <td>50</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Division</th>
+                                    <th>Male</th>
+                                    <th>Female</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Division 1</td>
+                                    <td>150</td>
+                                    <td>150</td>
+                                    <td>300</td>
+                                </tr>
+                                <tr>
+                                    <td>Division 2</td>
+                                    <td>250</td>
+                                    <td>250</td>
+                                    <td>500</td>
+                                </tr>
+                                <tr>
+                                    <td>Division 3</td>
+                                    <td>225</td>
+                                    <td>225</td>
+                                    <td>450</td>
+                                </tr>
+                                <tr>
+                                    <td>Division 4</td>
+                                    <td>100</td>
+                                    <td>100</td>
+                                    <td>200</td>
+                                </tr>
+                                <tr>
+                                    <td>Failed</td>
+                                    <td>50</td>
+                                    <td>50</td>
+                                    <td>100</td>
+                                </tr>
+                                <tr>
+                                    <td>Absentee</td>
+                                    <td>25</td>
+                                    <td>25</td>
+                                    <td>50</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // Highcharts Pie Chart
+        Highcharts.chart('pie-chart', {
+            chart: {
+                type: 'pie'
+            },
+            title: {
+                text: 'Results Summary'
+            },
+            series: [{
+                name: 'Candidates',
+                colorByPoint: true,
+                data: [{
+                    name: 'Division 1',
+                    y: 39.1
+                }, {
+                    name: 'Division 2',
+                    y: 25.2
+                }, {
+                    name: 'Division 3',
+                    y: 17.6
+                }, {
+                    name: 'Division 4',
+                    y: 12.1
+                }, {
+                    name: 'Failed',
+                    y: 4.7
+                }, {
+                    name: 'Absentee',
+                    y: 1.3
+                }]
+            }]
+        });
+
+        // Highcharts Bar Chart
+        Highcharts.chart('bar-chart', {
+            chart: {
+                type: 'column'
+            },
+            title: {
+                text: 'Results by Division and Gender'
+            },
+            xAxis: {
+                categories: ['Division 1', 'Division 2', 'Division 3', 'Division 4', 'Failed', 'Absentee']
+            },
+            yAxis: {
+                min: 0,
+                title: {
+                    text: 'Number of Candidates'
+                }
+            },
+            series: [{
+                name: 'Male',
+                data: [150, 250, 225, 100, 50, 25]
+            }, {
+                name: 'Female',
+                data: [150, 250, 225, 100, 50, 25]
+            }]
+        });
+    </script>
+
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

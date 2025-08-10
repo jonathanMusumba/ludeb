@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Setup Examination System</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: url('background.jpg') no-repeat center center fixed;
+            background-size: cover;
+            color: #fff;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 30px;
+            border-radius: 15px;
+            margin-top: 50px;
+            max-width: 700px;
+        }
+        .form-group label {
+            color: #fff;
+        }
+        h1, h2 {
+            color: #ffd700;
+            text-align: center;
+        }
+        .btn-primary {
+            background-color: #ffd700;
+            border: none;
+            color: #000;
+        }
+        .btn-primary:hover {
+            background-color: #ffc107;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+        }
+        .form-control, .form-control-file {
+            background-color: rgba(255, 255, 255, 0.8);
+            border: none;
+        }
+        .step {
+            display: none;
+        }
+        .step.active {
+            display: block;
+        }
+        .progress {
+            margin-bottom: 20px;
+        }
+        .add-user {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Setup Examination System</h1>
+        <div class="progress">
+            <div class="progress-bar" role="progressbar" style="width: 33%;" id="progressBar">Step 1 of 3</div>
+        </div>
+        <form id="setupForm" action="php/setup.php" method="post" enctype="multipart/form-data">
+            <!-- Step 1: District Setup -->
+            <div class="step active" id="step1">
+                <h2>District Setup</h2>
+                <div class="form-group">
+                    <label for="districtName">District Name:</label>
+                    <input type="text" class="form-control" id="districtName" name="districtName" required>
+                </div>
+                <div class="form-group">
+                    <label for="districtCode">District Code:</label>
+                    <input type="text" class="form-control" id="districtCode" name="districtCode" required>
+                </div>
+                <button type="button" class="btn btn-primary" onclick="nextStep(2)">Next</button>
+            </div>
+
+            <!-- Step 2: Board Setup -->
+            <div class="step" id="step2">
+                <h2>Board Setup</h2>
+                <div class="form-group">
+                    <label for="boardName">Examination Board Name:</label>
+                    <input type="text" class="form-control" id="boardName" name="boardName" required>
+                </div>
+                <div class="form-group">
+                    <label for="examYear">Examination Year:</label>
+                    <input type="number" class="form-control" id="examYear" name="examYear" required>
+                </div>
+                <div class="form-group">
+                    <label for="contactEmail">Contact Email:</label>
+                    <input type="email" class="form-control" id="contactEmail" name="contactEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="logo">Upload Logo:</label>
+                    <input type="file" class="form-control-file" id="logo" name="logo">
+                </div>
+                <button type="button" class="btn btn-secondary" onclick="prevStep(1)">Previous</button>
+                <button type="button" class="btn btn-primary" onclick="nextStep(3)">Next</button>
+            </div>
+
+            <!-- Step 3: User Setup -->
+            <div class="step" id="step3">
+                <h2>User Setup</h2>
+                <h4>System Administrator</h4>
+                <div class="form-group">
+                    <label for="adminUsername">Admin Username:</label>
+                    <input type="text" class="form-control" id="adminUsername" name="adminUsername" required>
+                </div>
+                <div class="form-group">
+                    <label for="adminEmail">Admin Email:</label>
+                    <input type="email" class="form-control" id="adminEmail" name="adminEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="adminPassword">Admin Password:</label>
+                    <input type="password" class="form-control" id="adminPassword" name="adminPassword" required>
+                </div>
+                <h4>Additional Users (Optional)</h4>
+                <div id="userManagement">
+                    <div class="user-entry">
+                        <div class="form-group">
+                            <label for="username">Username:</label>
+                            <input type="text" class="form-control" name="username[]">
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email:</label>
+                            <input type="email" class="form-control" name="email[]">
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Password:</label>
+                            <input type="password" class="form-control" name="password[]">
+                        </div>
+                        <div class="form-group">
+                            <label for="role">Role:</label>
+                            <select class="form-control" name="role[]">
+                                <option value="Examination Administrator">Examination Administrator</option>
+                                <option value="Data Entrant">Data Entrant</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-secondary add-user" id="addUserButton">Add Another User</button>
+                </div>
+                <button type="button" class="btn btn-secondary" onclick="prevStep(2)">Previous</button>
+                <button type="submit" class="btn btn-primary">Complete Setup</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        function nextStep(step) {
+            document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+            document.getElementById(`step${step}`).classList.add('active');
+            document.getElementById('progressBar').style.width = `${step * 33}%`;
+            document.getElementById('progressBar').innerText = `Step ${step} of 3`;
+        }
+
+        function prevStep(step) {
+            document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+            document.getElementById(`step${step}`).classList.add('active');
+            document.getElementById('progressBar').style.width = `${step * 33}%`;
+            document.getElementById('progressBar').innerText = `Step ${step} of 3`;
+        }
+
+        document.getElementById('addUserButton').addEventListener('click', function () {
+            const userManagementDiv = document.getElementById('userManagement');
+            const userDiv = document.createElement('div');
+            userDiv.classList.add('user-entry');
+            userDiv.innerHTML = `
+                <div class="form-group">
+                    <label for="username">Username:</label>
+                    <input type="text" class="form-control" name="username[]">
+                </div>
+                <div class="form-group">
+                    <label for="email">Email:</label>
+                    <input type="email" class="form-control" name="email[]">
+                </div>
+                <div class="form-group">
+                    <label for="password">Password:</label>
+                    <input type="password" class="form-control" name="password[]">
+                </div>
+                <div class="form-group">
+                    <label for="role">Role:</label>
+                    <select class="form-control" name="role[]">
+                        <option value="Examination Administrator">Examination Administrator</option>
+                        <option value="Data Entrant">Data Entrant</option>
+                    </select>
+                </div>
+            `;
+            userManagementDiv.insertBefore(userDiv, document.getElementById('addUserButton'));
+        });
+    </script>
+</body>
+</html>
