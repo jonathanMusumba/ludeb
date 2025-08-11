@@ -63,6 +63,8 @@ $csrf_token = $_SESSION['csrf_token'];
     <script src="https://code.highcharts.com/highcharts.js"></script>
     <script src="https://code.highcharts.com/modules/exporting.js"></script>
     <script src="https://code.highcharts.com/modules/export-data.js"></script>
+    <link rel="icon" type="image/x-icon" href="../static/img/icon.ico">
+
     <style>
         :root {
             --primary-color: #4f46e5;
@@ -949,17 +951,17 @@ $csrf_token = $_SESSION['csrf_token'];
                         </div>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link <?php echo ($page_title === 'Create Feedback' || $page_title === 'Manage Feedbacks') ? 'active' : ''; ?>" href="#" data-bs-toggle="collapse" data-bs-target="#feedbacksMenu">
+                        <a class="nav-link <?php echo ($page_title === 'View Feedbacks' || $page_title === 'Manage Feedbacks') ? 'active' : ''; ?>" href="#" data-bs-toggle="collapse" data-bs-target="#feedbacksMenu">
                             <i class="fas fa-comments"></i>
                             Managing Feedbacks
                             <i class="fas fa-chevron-down ms-auto"></i>
                         </a>
-                        <div id="feedbacksMenu" class="collapse <?php echo ($page_title === 'Create Feedback' || $page_title === 'Manage Feedbacks') ? 'show' : ''; ?>">
+                        <div id="feedbacksMenu" class="collapse <?php echo ($page_title === 'View Feedbacks' || $page_title === 'Manage Feedbacks') ? 'show' : ''; ?>">
                             <ul class="nav flex-column collapse-menu">
                                 <li class="nav-item">
-                                    <a class="nav-link <?php echo ($page_title === 'Create Feedback') ? 'active' : ''; ?>" href="feedbacks/create.php">
-                                        <i class="fas fa-plus"></i>
-                                        Create Feedback
+                                    <a class="nav-link <?php echo ($page_title === 'View Feedbacks') ? 'active' : ''; ?>" href="feedbacks/view_feedbacks.php">
+                                        <i class="fas fa-eye"></i>
+                                        View Feedbacks
                                     </a>
                                 </li>
                                 <li class="nav-item">

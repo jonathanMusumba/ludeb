@@ -19,6 +19,7 @@ function renderLayout($title, $data) {
     <script src="https://code.highcharts.com/highcharts.js"></script>
     <script src="https://code.highcharts.com/modules/drilldown.js"></script>
     <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+    <link rel="icon" type="image/x-icon" href="../static/img/icon.ico">
     <style>
         :root {
             --primary-color: #1d3557;

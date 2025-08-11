@@ -54,6 +54,7 @@ $csrf_token = $_SESSION['csrf_token'];
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo htmlspecialchars($page_title ?? 'Results Management System'); ?> - RMS</title>
+    <link rel="icon" type="image/x-icon" href="../static/img/icon.ico">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://code.highcharts.com/highcharts.js"></script>
@@ -940,17 +941,17 @@ $csrf_token = $_SESSION['csrf_token'];
                         </div>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link <?php echo ($page_title === 'Create Feedback' || $page_title === 'Manage Feedbacks') ? 'active' : ''; ?>" href="#" data-bs-toggle="collapse" data-bs-target="#feedbacksMenu">
+                        <a class="nav-link <?php echo ($page_title === 'View Feedbacks' || $page_title === 'Manage Feedbacks') ? 'active' : ''; ?>" href="#" data-bs-toggle="collapse" data-bs-target="#feedbacksMenu">
                             <i class="fas fa-comments"></i>
                             Managing Feedbacks
                             <i class="fas fa-chevron-down ms-auto"></i>
                         </a>
-                        <div id="feedbacksMenu" class="collapse <?php echo ($page_title === 'Create Feedback' || $page_title === 'Manage Feedbacks') ? 'show' : ''; ?>">
+                        <div id="feedbacksMenu" class="collapse <?php echo ($page_title === 'View Feedbacks' || $page_title === 'Manage Feedbacks') ? 'show' : ''; ?>">
                             <ul class="nav flex-column collapse-menu">
                                 <li class="nav-item">
-                                    <a class="nav-link <?php echo ($page_title === 'Create Feedback') ? 'active' : ''; ?>" href="feedbacks/create.php">
-                                        <i class="fas fa-plus"></i>
-                                        Create Feedback
+                                    <a class="nav-link <?php echo ($page_title === 'View Feedbacks') ? 'active' : ''; ?>" href="feedbacks/view_feedbacks.php">
+                                        <i class="fas fa-eye"></i>
+                                        View Feedbacks
                                     </a>
                                 </li>
                                 <li class="nav-item">

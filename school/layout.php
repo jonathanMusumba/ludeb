@@ -23,6 +23,7 @@ $year = isset($_GET['year']) ? (int)$_GET['year'] : date('Y');
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="icon" type="image/x-icon" href="../static/img/icon.ico">
   <style>
     /* Admin Dashboard Styles */
     header#topbar .topbar-left .year_filter_fm #year_select_form .form-group { margin-bottom: 0 !important; }
