@@ -144,6 +144,20 @@ $year = isset($_GET['year']) ? (int)$_GET['year'] : date('Y');
       <a href="./feedback.php">
         <i class="fas fa-comment-dots text-orange-600"></i>
         <span>Send Feedback</span>
+        <?php
+        if (isset($_SESSION['school_id'])) {
+          $stmt = $conn->prepare("SELECT COUNT(*) FROM feedbacks WHERE school_id = ? AND response_text IS NOT NULL AND YEAR(submitted_at) = ?");
+          if ($stmt) {
+            $stmt->bind_param("ii", $_SESSION['school_id'], $year);
+            $stmt->execute();
+            $count = $stmt->get_result()->fetch_row()[0];
+            $stmt->close();
+            if ($count > 0) {
+              echo '<span class="badge-circle">' . $count . '</span>';
+            }
+          }
+        }
+        ?>
       </a>
       <a href="#" class="text-gray-400 cursor-not-allowed">
         <i class="fas fa-cog text-gray-400"></i>
@@ -298,6 +312,20 @@ $year = isset($_GET['year']) ? (int)$_GET['year'] : date('Y');
           <li>
             <a href="./feedback.php" class="flex items-center">
               <i class="fas fa-comment-dots mr-2"></i>Send Feedback
+              <?php
+              if (isset($_SESSION['school_id'])) {
+                $stmt = $conn->prepare("SELECT COUNT(*) FROM feedbacks WHERE school_id = ? AND response_text IS NOT NULL AND YEAR(submitted_at) = ?");
+                if ($stmt) {
+                  $stmt->bind_param("ii", $_SESSION['school_id'], $year);
+                  $stmt->execute();
+                  $count = $stmt->get_result()->fetch_row()[0];
+                  $stmt->close();
+                  if ($count > 0) {
+                    echo '<span class="badge-circle">' . $count . '</span>';
+                  }
+                }
+              }
+              ?>
             </a>
           </li>
         </div>
