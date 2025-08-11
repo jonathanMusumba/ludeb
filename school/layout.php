@@ -9,6 +9,9 @@ if (isset($_GET['logout'])) {
     header('Location: ../logout.php');
     exit();
 }
+
+// Get the selected year or default to current year
+$year = isset($_GET['year']) ? (int)$_GET['year'] : date('Y');
 ?>
 
 <!DOCTYPE html>
@@ -61,7 +64,7 @@ if (isset($_GET['logout'])) {
     .fixed-footer { position: fixed; bottom: 0; width: 100%; background-color: #1d1d1d; color: #ffffff; text-align: center; padding: 10px 0; z-index: 1000; }
     .top-links { background: none; padding: 10px 0; }
     .top-links a { color: #333; margin-right: 15px; text-decoration: none; }
-    .top-links a:hover { text-decoration: underline; }
+    .top-links a:hover { background-color: #f5f5f5; border-radius: 4px; padding: 4px 8px; transition: background-color 0.2s ease; }
     .user-image { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
     .dropdown-menu { display: none; position: absolute; z-index: 1000; background: white; border: 1px solid #ddd; border-radius: 4px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); min-width: 150px; }
     .dropdown-menu.show { display: block; }
@@ -79,8 +82,12 @@ if (isset($_GET['logout'])) {
     
     .mobile-menu-items { padding: 20px 0; }
     .mobile-menu-items a { display: flex; align-items: center; padding: 12px 20px; color: #333; text-decoration: none; border-bottom: 1px solid #eee; }
-    .mobile-menu-items a:hover { background: #f5f5f5; }
+    .mobile-menu-items a:hover { background: #f5f5f5; color: #2563eb; transition: background-color 0.2s ease, color 0.2s ease; }
     .mobile-menu-items a i { width: 20px; margin-right: 10px; }
+    
+    /* Menu Strip Hover Effect */
+    .page-header-menu a { transition: background-color 0.2s ease, color 0.2s ease; }
+    .page-header-menu a:hover { background-color: #1e40af; color: #ffffff; border-radius: 4px; padding: 4px 8px; }
     
     /* Responsive adjustments */
     @media (max-width: 768px) {
@@ -118,6 +125,10 @@ if (isset($_GET['logout'])) {
       </button>
     </div>
     <div class="mobile-menu-items">
+      <a href="./index.php">
+        <i class="fas fa-home text-blue-600"></i>
+        <span>Home</span>
+      </a>
       <a href="./resources.php?year=2025">
         <i class="fas fa-folder-open text-blue-600"></i>
         <span>Resources</span>
@@ -126,7 +137,7 @@ if (isset($_GET['logout'])) {
         <i class="fas fa-bullhorn text-green-600"></i>
         <span>Announcements</span>
       </a>
-      <a href="./uploads.php?year=2025">
+      <a href="./Uploads.php?year=2025">
         <i class="fas fa-cloud-upload-alt text-purple-600"></i>
         <span>Uploads</span>
       </a>
@@ -157,8 +168,16 @@ if (isset($_GET['logout'])) {
           <span class="hidden sm:inline">Announcements</span>
           <span class="sm:hidden">Ann.</span>
           <span class="badge-circle"><?php
-            $result = $conn->query("SELECT COUNT(*) FROM audit_logs WHERE action = 'announcement' AND created_at >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)");
-            echo $result ? $result->fetch_row()[0] : 0;
+            $stmt = $conn->prepare("SELECT COUNT(*) FROM announcements WHERE YEAR(created_at) = ?");
+            if ($stmt) {
+              $stmt->bind_param("i", $year);
+              $stmt->execute();
+              $result = $stmt->get_result();
+              echo $result->fetch_row()[0];
+              $stmt->close();
+            } else {
+              echo 0;
+            }
           ?></span>
         </a>
         <ul class="dropdown-menu">
@@ -172,18 +191,13 @@ if (isset($_GET['logout'])) {
           <span class="hidden sm:inline">Resources</span>
           <span class="sm:hidden">Res.</span>
           <span class="badge-circle"><?php
-            // Fixed: Check if session exists before using it
-            if (isset($_SESSION['school_id'])) {
-              $stmt = $conn->prepare("SELECT COALESCE((SELECT COUNT(*) FROM uploads WHERE school_id = ?), 0) + COALESCE((SELECT COUNT(*) FROM resources WHERE school_id = ?), 0) AS total");
-              if ($stmt) {
-                $stmt->bind_param("ii", $_SESSION['school_id'], $_SESSION['school_id']);
-                $stmt->execute();
-                $result = $stmt->get_result();
-                echo $result->fetch_row()[0];
-                $stmt->close();
-              } else {
-                echo 0;
-              }
+            $stmt = $conn->prepare("SELECT COUNT(*) FROM resources WHERE approved = 1 AND YEAR(created_at) = ?");
+            if ($stmt) {
+              $stmt->bind_param("i", $year);
+              $stmt->execute();
+              $result = $stmt->get_result();
+              echo $result->fetch_row()[0];
+              $stmt->close();
             } else {
               echo 0;
             }
@@ -200,7 +214,6 @@ if (isset($_GET['logout'])) {
         <a href="javascript:;" class="dropdown-toggle flex items-center text-sm md:text-base">
           <span class="hidden sm:inline">
             <?php
-              // Fixed: Check if session exists and handle null values
               if (isset($_SESSION['school_id'])) {
                 $stmt = $conn->prepare("SELECT school_name FROM schools WHERE id = ?");
                 if ($stmt) {
@@ -225,7 +238,7 @@ if (isset($_GET['logout'])) {
           <li><a href="profile.php" class="block p-2 hover:bg-gray-100">
             <i class="fas fa-user mr-2"></i>My Profile
           </a></li>
-          <li><a href="uploads.php" class="block p-2 hover:bg-gray-100">
+          <li><a href="Uploads.php" class="block p-2 hover:bg-gray-100">
             <i class="fas fa-cloud-upload-alt mr-2"></i>My Uploads 
             <span class="badge-circle"><?php
               if (isset($_SESSION['school_id'])) {
@@ -249,7 +262,7 @@ if (isset($_GET['logout'])) {
         </ul>
       </div>
       
-      <a href="../logout.php" class="flex items-center hover:underline text-sm md:text-base">
+      <a href="../logout.php" class="flex items-center text-sm md:text-base">
         <i class="fas fa-sign-out-alt mr-1"></i>
         <span class="hidden sm:inline">Logout</span>
         <span class="sm:hidden">Out</span>
@@ -263,22 +276,27 @@ if (isset($_GET['logout'])) {
       <ul class="flex justify-between items-center">
         <div class="flex space-x-6">
           <li>
-            <a href="./resources.php?year=2025" class="hover:underline flex items-center">
+            <a href="./index.php" class="flex items-center">
+              <i class="fas fa-home mr-2"></i>Home
+            </a>
+          </li>
+          <li>
+            <a href="./resources.php?year=2025" class="flex items-center">
               <i class="fas fa-folder-open mr-2"></i>Resources
             </a>
           </li>
           <li>
-            <a href="./announcements.php?year=2025" class="hover:underline flex items-center">
+            <a href="./announcements.php?year=2025" class="flex items-center">
               <i class="fas fa-bullhorn mr-2"></i>Announcements
             </a>
           </li>
           <li>
-            <a href="./uploads.php?year=2025" class="hover:underline flex items-center">
+            <a href="./Uploads.php?year=2025" class="flex items-center">
               <i class="fas fa-cloud-upload-alt mr-2"></i>Uploads
             </a>
           </li>
           <li>
-            <a href="./feedback.php" class="hover:underline flex items-center">
+            <a href="./feedback.php" class="flex items-center">
               <i class="fas fa-comment-dots mr-2"></i>Send Feedback
             </a>
           </li>
@@ -416,5 +434,3 @@ if (isset($_GET['logout'])) {
   </script>
 </body>
 </html>
-
-<?php

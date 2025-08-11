@@ -1,8 +1,8 @@
 <?php
 require_once 'db_connect.php';
 if (!isset($_SESSION['school_id'])) {
-  header('Location: ../login.php');
-  exit;
+    header('Location: ../login.php');
+    exit;
 }
 
 $schoolId = $_SESSION['school_id'];
@@ -16,7 +16,14 @@ $examYearResult = $stmt->get_result()->fetch_assoc();
 $examYearId = $examYearResult ? $examYearResult['id'] : null;
 $stmt->close();
 
-// Get dashboard statistics
+// Get available exam years for dropdown
+function getAvailableExamYears($conn) {
+    $stmt = $conn->prepare("SELECT id, exam_year FROM exam_years ORDER BY exam_year DESC");
+    $stmt->execute();
+    return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+}
+
+// Modified getDashboardStats function
 function getDashboardStats($conn, $schoolId, $examYearId, $year) {
     $stats = [];
     
@@ -61,14 +68,15 @@ function getDashboardStats($conn, $schoolId, $examYearId, $year) {
     $stmt->close();
     
     // Recent Resources
-    $stmt = $conn->prepare("SELECT COUNT(*) FROM resources WHERE approved = 1 AND YEAR(created_at) = ? LIMIT 5");
+    $stmt = $conn->prepare("SELECT COUNT(*) FROM resources WHERE approved = 1 AND YEAR(created_at) = ?");
     $stmt->bind_param("i", $year);
     $stmt->execute();
     $stats['recent_resources'] = $stmt->get_result()->fetch_row()[0];
     $stmt->close();
     
-    // Recent Announcements
-    $stmt = $conn->prepare("SELECT COUNT(*) FROM audit_logs WHERE action = 'announcement' AND created_at >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)");
+    // Recent Announcements (Updated to use announcements table)
+    $stmt = $conn->prepare("SELECT COUNT(*) FROM announcements WHERE YEAR(created_at) = ?");
+    $stmt->bind_param("i", $year);
     $stmt->execute();
     $stats['recent_announcements'] = $stmt->get_result()->fetch_row()[0];
     $stmt->close();
@@ -98,50 +106,55 @@ function getRecentResources($conn, $year, $limit = 5) {
     return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 }
 
-// Get recent announcements
-function getRecentAnnouncements($conn, $limit = 5) {
-    $sql = "SELECT * FROM audit_logs 
-            WHERE action = 'announcement' 
-            ORDER BY created_at DESC 
+// Modified getRecentAnnouncements function
+function getRecentAnnouncements($conn, $year, $limit = 5) {
+    $sql = "SELECT a.*, u.username as uploader_name
+            FROM announcements a
+            LEFT JOIN system_users u ON a.uploader_id = u.id
+            WHERE YEAR(a.created_at) = ?
+            ORDER BY a.created_at DESC 
             LIMIT ?";
     
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $limit);
+    $stmt->bind_param("ii", $year, $limit);
     $stmt->execute();
     return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 }
 
-// Get recent results summary
-function getRecentResults($conn, $schoolId, $examYearId, $limit = 5) {
-    if (!$examYearId) return [];
+// Get results statistics for a specific exam year
+function getResultsStats($conn, $schoolId, $examYearId) {
+    if (!$examYearId) return null;
     
-    // Fixed: Use correct column names from the candidates table
-    $sql = "SELECT cr.*, c.candidate_name, c.index_number
-            FROM candidate_results cr
-            JOIN candidates c ON cr.candidate_id = c.id
-            WHERE cr.school_id = ? AND cr.exam_year_id = ?
-            ORDER BY cr.created_at DESC 
-            LIMIT ?";
+    $sql = "SELECT 
+                COUNT(*) as total_candidates,
+                COUNT(CASE WHEN cr.division IS NOT NULL THEN 1 END) as processed_results,
+                COUNT(CASE WHEN cr.division = 'Division 1' THEN 1 END) as div1,
+                COUNT(CASE WHEN cr.division = 'Division 2' THEN 1 END) as div2,
+                COUNT(CASE WHEN cr.division = 'Division 3' THEN 1 END) as div3,
+                COUNT(CASE WHEN cr.division = 'Division 4' THEN 1 END) as div4,
+                COUNT(CASE WHEN cr.division = 'Ungraded' THEN 1 END) as ungraded,
+                COUNT(CASE WHEN cr.division = 'X' OR cr.division IS NULL THEN 1 END) as absent,
+                AVG(CASE WHEN cr.aggregates > 0 THEN cr.aggregates END) as avg_aggregate
+            FROM candidates c
+            LEFT JOIN candidate_results cr ON c.id = cr.candidate_id AND cr.exam_year_id = ?
+            WHERE c.school_id = ? AND c.exam_year_id = ?";
     
     $stmt = $conn->prepare($sql);
-    if (!$stmt) {
-        error_log("Prepare failed: " . $conn->error);
-        return [];
-    }
-    
-    $stmt->bind_param("iii", $schoolId, $examYearId, $limit);
+    $stmt->bind_param("iii", $examYearId, $schoolId, $examYearId);
     $stmt->execute();
-    return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    return $stmt->get_result()->fetch_assoc();
 }
 
 $stats = getDashboardStats($conn, $schoolId, $examYearId, $year);
 $recent_resources = getRecentResources($conn, $year);
-$recent_announcements = getRecentAnnouncements($conn);
-$recent_results = getRecentResults($conn, $schoolId, $examYearId);
+$recent_announcements = getRecentAnnouncements($conn, $year); // Updated to pass $year
+$available_years = getAvailableExamYears($conn);
+$results_stats = getResultsStats($conn, $schoolId, $examYearId);
 
 $pageTitle = 'Dashboard';
 ob_start();
 ?>
+
 
 <!-- Dashboard Overview -->
 <div class="mb-8">
@@ -277,117 +290,196 @@ ob_start();
     </div>
 
     <!-- Announcements Section -->
-    <div class="bg-white rounded-lg shadow-md">
-        <div class="p-6 border-b border-gray-200">
-            <div class="flex items-center justify-between">
-                <h2 class="text-xl font-semibold text-gray-800 flex items-center">
-                    <i class="fas fa-bullhorn text-green-600 mr-3"></i>Recent Announcements
-                </h2>
-                <a href="./announcements.php?year=<?php echo $year; ?>" class="text-green-600 hover:text-green-800 text-sm font-medium">
-                    View All <i class="fas fa-arrow-right ml-1"></i>
-                </a>
-            </div>
-            <p class="text-gray-600 text-sm mt-1"><?php echo $stats['recent_announcements']; ?> announcements this month</p>
-        </div>
-        <div class="p-6">
-            <?php if (empty($recent_announcements)): ?>
-                <div class="text-center py-8">
-                    <i class="fas fa-bullhorn text-4xl text-gray-300 mb-3"></i>
-                    <p class="text-gray-500">No recent announcements</p>
-                    <a href="./announcements.php?year=<?php echo $year; ?>" class="text-green-600 hover:text-green-800 text-sm">
-                        View all announcements
-                    </a>
-                </div>
-            <?php else: ?>
-                <div class="space-y-4">
-                    <?php foreach (array_slice($recent_announcements, 0, 5) as $announcement): ?>
-                    <div class="border-l-4 border-green-500 pl-4 py-2">
-                        <div class="flex items-start justify-between">
-                            <div class="flex-1">
-                                <p class="font-medium text-gray-800 mb-1">New Announcement</p>
-                                <p class="text-sm text-gray-600 mb-2">
-                                    Action: <?php echo htmlspecialchars($announcement['action']); ?>
-                                </p>
-                                <div class="text-xs text-gray-500">
-                                    <i class="fas fa-clock mr-1"></i>
-                                    <?php echo date('M d, Y g:i A', strtotime($announcement['created_at'])); ?>
-                                </div>
-                            </div>
-                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
-                                <i class="fas fa-bell mr-1"></i>New
-                            </span>
-                        </div>
-                    </div>
-                    <?php endforeach; ?>
-                </div>
-                
-                <div class="mt-4 text-center">
-                    <a href="./announcements.php?year=<?php echo $year; ?>" class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
-                        <i class="fas fa-bullhorn mr-2"></i>View All Announcements
-                    </a>
-                </div>
-            <?php endif; ?>
-        </div>
-    </div>
-
-    <!-- Results Section -->
 <div class="bg-white rounded-lg shadow-md">
     <div class="p-6 border-b border-gray-200">
         <div class="flex items-center justify-between">
             <h2 class="text-xl font-semibold text-gray-800 flex items-center">
-                <i class="fas fa-chart-bar text-indigo-600 mr-3"></i>Recent Results
+                <i class="fas fa-bullhorn text-green-600 mr-3"></i>Recent Announcements
             </h2>
-            <a href="./results.php?year=<?php echo $year; ?>" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+            <a href="./announcements.php?year=<?php echo $year; ?>" class="text-green-600 hover:text-green-800 text-sm font-medium">
                 View All <i class="fas fa-arrow-right ml-1"></i>
             </a>
         </div>
-        <p class="text-gray-600 text-sm mt-1"><?php echo $stats['results_processed']; ?> results processed for <?php echo $year; ?></p>
+        <p class="text-gray-600 text-sm mt-1"><?php echo $stats['recent_announcements']; ?> announcements for <?php echo $year; ?></p>
     </div>
     <div class="p-6">
-        <?php if (empty($recent_results)): ?>
+        <?php if (empty($recent_announcements)): ?>
             <div class="text-center py-8">
-                <i class="fas fa-chart-bar text-4xl text-gray-300 mb-3"></i>
-                <p class="text-gray-500">No results processed yet</p>
-                <?php if ($stats['pending_marks'] > 0): ?>
-                    <p class="text-orange-600 text-sm mt-2">
-                        <i class="fas fa-exclamation-triangle mr-1"></i>
-                        <?php echo $stats['pending_marks']; ?> marks pending input
-                    </p>
-                <?php endif; ?>
+                <i class="fas fa-bullhorn text-4xl text-gray-300 mb-3"></i>
+                <p class="text-gray-500">No announcements for <?php echo $year; ?></p>
+                <a href="./announcements.php?year=<?php echo $year; ?>" class="text-green-600 hover:text-green-800 text-sm">
+                    View all announcements
+                </a>
             </div>
         <?php else: ?>
             <div class="space-y-4">
-                <?php foreach ($recent_results as $result): ?>
-                <div class="border border-gray-200 rounded-lg p-4">
+                <?php foreach (array_slice($recent_announcements, 0, 5) as $announcement): ?>
+                <div class="border-l-4 border-green-500 pl-4 py-2">
                     <div class="flex items-start justify-between">
                         <div class="flex-1">
-                            <h4 class="font-medium text-gray-800 mb-1">
-                                <?php echo htmlspecialchars($result['candidate_name']); ?>
-                            </h4>
-                            <p class="text-sm text-gray-600 mb-2">
-                                Index No: <?php echo htmlspecialchars($result['index_number']); ?>
-                            </p>
+                            <p class="font-medium text-gray-800 mb-1"><?php echo htmlspecialchars(substr($announcement['content'], 0, 50)) . (strlen($announcement['content']) > 50 ? '...' : ''); ?></p>
+                            <div class="flex flex-wrap gap-2 mb-2">
+                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
+                                    <i class="fas fa-tags mr-1"></i><?php echo htmlspecialchars(ucfirst($announcement['category'])); ?>
+                                </span>
+                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs 
+                                    <?php echo $announcement['priority'] === 'high' ? 'bg-red-100 text-red-800' : ($announcement['priority'] === 'medium' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'); ?>">
+                                    <i class="fas fa-exclamation-circle mr-1"></i><?php echo htmlspecialchars(ucfirst($announcement['priority'])); ?>
+                                </span>
+                            </div>
                             <div class="text-xs text-gray-500">
-                                <i class="fas fa-clock mr-1"></i>
-                                <?php echo date('M d, Y', strtotime($result['created_at'])); ?>
+                                <span><i class="fas fa-user mr-1"></i><?php echo htmlspecialchars($announcement['uploader_name'] ?? 'Unknown'); ?></span>
+                                <span class="ml-4"><i class="fas fa-clock mr-1"></i><?php echo date('M d, Y g:i A', strtotime($announcement['created_at'])); ?></span>
                             </div>
                         </div>
-                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-indigo-100 text-indigo-800">
-                            <i class="fas fa-check-circle mr-1"></i>Processed
-                        </span>
+                        <a href="./announcements.php?year=<?php echo $year; ?>" class="text-green-600 hover:text-green-800 text-sm">
+                            <i class="fas fa-eye"></i>
+                        </a>
                     </div>
                 </div>
                 <?php endforeach; ?>
             </div>
             
             <div class="mt-4 text-center">
-                <a href="./results.php?year=<?php echo $year; ?>" class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
-                    <i class="fas fa-chart-bar mr-2"></i>View All Results
+                <a href="./announcements.php?year=<?php echo $year; ?>" class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                    <i class="fas fa-bullhorn mr-2"></i>View All Announcements
                 </a>
             </div>
         <?php endif; ?>
     </div>
 </div>
+<!-- Results Download Section (FIXED) -->
+    <div class="bg-white rounded-lg shadow-md">
+        <div class="p-6 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+                <h2 class="text-xl font-semibold text-gray-800 flex items-center">
+                    <i class="fas fa-chart-bar text-indigo-600 mr-3"></i>Results Download
+                </h2>
+                <a href="./results.php?year=<?php echo $year; ?>" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+                    View All <i class="fas fa-arrow-right ml-1"></i>
+                </a>
+            </div>
+            <p class="text-gray-600 text-sm mt-1">Download results in your preferred format</p>
+        </div>
+        <div class="p-6">
+            <!-- Exam Year Selection Form -->
+            <form id="resultsDownloadForm" action="generate_school_results.php" method="GET" target="_blank">
+                <input type="hidden" name="school_id" value="<?php echo $schoolId; ?>">
+                
+                <!-- Exam Year Selection -->
+                <div class="mb-4">
+                    <label for="exam_year_select" class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-calendar-alt mr-1"></i>Select Exam Year
+                    </label>
+                    <select id="exam_year_select" name="exam_year_id" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" onchange="updateResultsStats()">
+                        <option value="">Choose exam year...</option>
+                        <?php foreach ($available_years as $examYear): ?>
+                        <option value="<?php echo $examYear['id']; ?>" <?php echo ($examYear['id'] == $examYearId) ? 'selected' : ''; ?>>
+                            <?php echo $examYear['exam_year']; ?>
+                        </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <!-- Format Selection -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-file-download mr-1"></i>Download Format
+                    </label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                            <input type="radio" name="format" value="pdf" class="mr-3 text-indigo-600 focus:ring-indigo-500" required onchange="validateForm()">
+                            <div class="flex items-center">
+                                <i class="fas fa-file-pdf text-red-600 text-lg mr-2"></i>
+                                <div>
+                                    <div class="font-medium text-gray-900">PDF</div>
+                                    <div class="text-xs text-gray-500">Printable format</div>
+                                </div>
+                            </div>
+                        </label>
+                        <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                            <input type="radio" name="format" value="excel" class="mr-3 text-indigo-600 focus:ring-indigo-500" required onchange="validateForm()">
+                            <div class="flex items-center">
+                                <i class="fas fa-file-excel text-green-600 text-lg mr-2"></i>
+                                <div>
+                                    <div class="font-medium text-gray-900">Excel</div>
+                                    <div class="text-xs text-gray-500">Spreadsheet format</div>
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Download Button -->
+                <div class="mb-4">
+                    <button type="submit" class="w-full bg-indigo-600 text-white py-3 px-4 rounded-lg hover:bg-indigo-700 transition-colors font-medium disabled:bg-gray-400 disabled:cursor-not-allowed" id="downloadBtn" disabled>
+                        <i class="fas fa-download mr-2"></i>Download Results
+                    </button>
+                </div>
+            </form>
+
+            <!-- Results Statistics Preview -->
+            <div id="resultsStatsPreview" class="mt-6 pt-4 border-t border-gray-200" <?php echo !$results_stats || $results_stats['total_candidates'] == 0 ? 'style="display: none;"' : ''; ?>>
+                <h4 class="font-medium text-gray-800 mb-3">Results Summary</h4>
+                <div id="statsContent">
+                    <?php if ($results_stats && $results_stats['total_candidates'] > 0): ?>
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div class="bg-gray-50 p-3 rounded">
+                            <div class="font-medium text-gray-700">Total Candidates</div>
+                            <div class="text-lg font-bold text-blue-600"><?php echo number_format($results_stats['total_candidates']); ?></div>
+                        </div>
+                        <div class="bg-gray-50 p-3 rounded">
+                            <div class="font-medium text-gray-700">Processed</div>
+                            <div class="text-lg font-bold text-green-600"><?php echo number_format($results_stats['processed_results']); ?></div>
+                        </div>
+                        <div class="bg-gray-50 p-3 rounded">
+                            <div class="font-medium text-gray-700">Average Aggregate</div>
+                            <div class="text-lg font-bold text-purple-600"><?php echo $results_stats['avg_aggregate'] ? round($results_stats['avg_aggregate'], 1) : 'N/A'; ?></div>
+                        </div>
+                        <div class="bg-gray-50 p-3 rounded">
+                            <div class="font-medium text-gray-700">Division I</div>
+                            <div class="text-lg font-bold text-indigo-600"><?php echo number_format($results_stats['div1']); ?></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Division Breakdown -->
+                    <div class="mt-4">
+                        <div class="text-sm text-gray-700 mb-2">Division Distribution:</div>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">Div I: <?php echo $results_stats['div1']; ?></span>
+                            <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">Div II: <?php echo $results_stats['div2']; ?></span>
+                            <span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-xs">Div III: <?php echo $results_stats['div3']; ?></span>
+                            <span class="px-2 py-1 bg-orange-100 text-orange-800 rounded text-xs">Div IV: <?php echo $results_stats['div4']; ?></span>
+                            <span class="px-2 py-1 bg-red-100 text-red-800 rounded text-xs">Ungraded: <?php echo $results_stats['ungraded']; ?></span>
+                            <span class="px-2 py-1 bg-gray-100 text-gray-800 rounded text-xs">Absent: <?php echo $results_stats['absent']; ?></span>
+                        </div>
+                    </div>
+
+                    <!-- Processing Progress -->
+                    <div class="mt-4">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-sm font-medium text-gray-700">Processing Progress</span>
+                            <span class="text-sm text-gray-500"><?php echo $results_stats['processed_results']; ?>/<?php echo $results_stats['total_candidates']; ?></span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <?php 
+                            $completion_rate = $results_stats['total_candidates'] > 0 ? 
+                                ($results_stats['processed_results'] / $results_stats['total_candidates']) * 100 : 0;
+                            ?>
+                            <div class="bg-indigo-600 h-2 rounded-full transition-all duration-300" style="width: <?php echo $completion_rate; ?>%"></div>
+                        </div>
+                    </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+
+            <!-- No Results Message -->
+            <div id="noResultsMessage" class="mt-6 pt-4 border-t border-gray-200 text-center py-4" style="display: none;">
+                <i class="fas fa-chart-bar text-4xl text-gray-300 mb-3"></i>
+                <p class="text-gray-500">No results available for selected year</p>
+            </div>
+        </div>
+    </div>
 
 <!-- Quick Actions Section -->
 <div class="bg-white rounded-lg shadow-md mb-8">
@@ -449,7 +541,6 @@ ob_start();
 </div>
 
 <!-- Activity Timeline -->
-<!-- Activity Timeline - CORRECTED VERSION -->
 <div class="bg-white rounded-lg shadow-md">
     <div class="p-6 border-b border-gray-200">
         <h2 class="text-xl font-semibold text-gray-800 flex items-center">
@@ -459,7 +550,6 @@ ob_start();
     </div>
     <div class="p-6">
         <div class="space-y-4">
-            <!-- Combine recent activities from resources, announcements, and results -->
             <?php 
             $activities = [];
             
@@ -482,22 +572,22 @@ ob_start();
                     'type' => 'announcement',
                     'icon' => 'fa-bullhorn',
                     'color' => 'green',
-                    'title' => 'New Announcement',
-                    'description' => 'Action: ' . $announcement['action'],
+                    'title' => 'New Announcement: ' . substr($announcement['content'], 0, 30) . (strlen($announcement['content']) > 30 ? '...' : ''),
+                    'description' => ucfirst($announcement['category']) . ' | ' . ucfirst($announcement['priority']) . ' Priority',
                     'time' => $announcement['created_at'],
                     'link' => "./announcements.php?year=$year"
                 ];
             }
             
-            // Add recent results to activities - FIXED: Use correct field names
-            foreach (array_slice($recent_results, 0, 3) as $result) {
+            // Add results processing activity if available
+            if ($results_stats && $results_stats['processed_results'] > 0) {
                 $activities[] = [
                     'type' => 'result',
                     'icon' => 'fa-chart-line',
                     'color' => 'indigo',
-                    'title' => 'Result Processed: ' . $result['candidate_name'],
-                    'description' => 'Index No: ' . $result['index_number'], // Fixed: changed from index_no to index_number
-                    'time' => $result['created_at'],
+                    'title' => 'Results Available',
+                    'description' => $results_stats['processed_results'] . ' results processed for ' . $year,
+                    'time' => date('Y-m-d H:i:s'),
                     'link' => "./results.php?year=$year"
                 ];
             }
@@ -507,8 +597,8 @@ ob_start();
                 return strtotime($b['time']) - strtotime($a['time']);
             });
             
-            // Display activities (limit to 8)
-            $activities = array_slice($activities, 0, 8);
+            // Display activities (limit to 6)
+            $activities = array_slice($activities, 0, 6);
             ?>
             
             <?php if (empty($activities)): ?>
@@ -770,6 +860,182 @@ setTimeout(function() {
 <?php unset($_SESSION['first_login']); ?>
 <?php endif; ?>
 </script>
+<script>
+// JavaScript functions for the results download section
+function updateResultsStats() {
+    const examYearSelect = document.getElementById('exam_year_select');
+    const selectedYearId = examYearSelect.value;
+    const schoolId = <?php echo $schoolId; ?>;
+    
+    // Reset form validation
+    validateForm();
+    
+    if (!selectedYearId) {
+        hideResultsStats();
+        return;
+    }
+    
+    // Show loading state
+    showLoadingStats();
+    
+    // Make AJAX request to fetch results statistics
+    fetch('get_results_stats.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({
+            school_id: schoolId,
+            exam_year_id: selectedYearId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            displayResultsStats(data.stats);
+        } else {
+            showNoResults();
+        }
+    })
+    .catch(error => {
+        console.error('Error fetching results stats:', error);
+        showNoResults();
+    });
+}
+
+function validateForm() {
+    const examYearSelect = document.getElementById('exam_year_select');
+    const formatRadios = document.querySelectorAll('input[name="format"]');
+    const downloadBtn = document.getElementById('downloadBtn');
+    
+    const yearSelected = examYearSelect.value !== '';
+    const formatSelected = Array.from(formatRadios).some(radio => radio.checked);
+    
+    downloadBtn.disabled = !(yearSelected && formatSelected);
+}
+
+function showLoadingStats() {
+    const preview = document.getElementById('resultsStatsPreview');
+    const noResultsMsg = document.getElementById('noResultsMessage');
+    const statsContent = document.getElementById('statsContent');
+    
+    preview.style.display = 'block';
+    noResultsMsg.style.display = 'none';
+    
+    statsContent.innerHTML = `
+        <div class="text-center py-4">
+            <i class="fas fa-spinner fa-spin text-indigo-600 text-xl"></i>
+            <p class="text-gray-500 mt-2">Loading statistics...</p>
+        </div>
+    `;
+}
+
+function displayResultsStats(stats) {
+    const preview = document.getElementById('resultsStatsPreview');
+    const noResultsMsg = document.getElementById('noResultsMessage');
+    const statsContent = document.getElementById('statsContent');
+    
+    if (!stats || stats.total_candidates == 0) {
+        showNoResults();
+        return;
+    }
+    
+    preview.style.display = 'block';
+    noResultsMsg.style.display = 'none';
+    
+    statsContent.innerHTML = `
+        <div class="grid grid-cols-2 gap-4 text-sm">
+            <div class="bg-gray-50 p-3 rounded">
+                <div class="font-medium text-gray-700">Total Candidates</div>
+                <div class="text-lg font-bold text-blue-600">${parseInt(stats.total_candidates).toLocaleString()}</div>
+            </div>
+            <div class="bg-gray-50 p-3 rounded">
+                <div class="font-medium text-gray-700">Processed</div>
+                <div class="text-lg font-bold text-green-600">${parseInt(stats.processed_results).toLocaleString()}</div>
+            </div>
+            <div class="bg-gray-50 p-3 rounded">
+                <div class="font-medium text-gray-700">Average Aggregate</div>
+                <div class="text-lg font-bold text-purple-600">${stats.avg_aggregate ? parseFloat(stats.avg_aggregate).toFixed(1) : 'N/A'}</div>
+            </div>
+            <div class="bg-gray-50 p-3 rounded">
+                <div class="font-medium text-gray-700">Division I</div>
+                <div class="text-lg font-bold text-indigo-600">${parseInt(stats.div1).toLocaleString()}</div>
+            </div>
+        </div>
+        
+        <!-- Division Breakdown -->
+        <div class="mt-4">
+            <div class="text-sm text-gray-700 mb-2">Division Distribution:</div>
+            <div class="flex flex-wrap gap-2">
+                <span class="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">Div I: ${stats.div1}</span>
+                <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">Div II: ${stats.div2}</span>
+                <span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-xs">Div III: ${stats.div3}</span>
+                <span class="px-2 py-1 bg-orange-100 text-orange-800 rounded text-xs">Div IV: ${stats.div4}</span>
+                <span class="px-2 py-1 bg-red-100 text-red-800 rounded text-xs">Ungraded: ${stats.ungraded}</span>
+                <span class="px-2 py-1 bg-gray-100 text-gray-800 rounded text-xs">Absent: ${stats.absent}</span>
+            </div>
+        </div>
+        
+        <!-- Processing Progress -->
+        <div class="mt-4">
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-sm font-medium text-gray-700">Processing Progress</span>
+                <span class="text-sm text-gray-500">${stats.processed_results}/${stats.total_candidates}</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2">
+                <div class="bg-indigo-600 h-2 rounded-full transition-all duration-300" style="width: ${stats.total_candidates > 0 ? (stats.processed_results / stats.total_candidates * 100).toFixed(1) : 0}%"></div>
+            </div>
+        </div>
+    `;
+}
+
+function showNoResults() {
+    const preview = document.getElementById('resultsStatsPreview');
+    const noResultsMsg = document.getElementById('noResultsMessage');
+    
+    preview.style.display = 'none';
+    noResultsMsg.style.display = 'block';
+}
+
+function hideResultsStats() {
+    const preview = document.getElementById('resultsStatsPreview');
+    const noResultsMsg = document.getElementById('noResultsMessage');
+    
+    preview.style.display = 'none';
+    noResultsMsg.style.display = 'none';
+}
+
+// Initialize form validation on page load
+document.addEventListener('DOMContentLoaded', function() {
+    validateForm();
+    
+    // If there's a pre-selected exam year, load its stats
+    const examYearSelect = document.getElementById('exam_year_select');
+    if (examYearSelect.value) {
+        updateResultsStats();
+    }
+    
+    // Add form submission handler
+    document.getElementById('resultsDownloadForm').addEventListener('submit', function(e) {
+        const downloadBtn = document.getElementById('downloadBtn');
+        if (downloadBtn.disabled) {
+            e.preventDefault();
+            return false;
+        }
+        
+        // Show loading state on button
+        downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Generating...';
+        downloadBtn.disabled = true;
+        
+        // Re-enable button after 3 seconds
+        setTimeout(() => {
+            downloadBtn.innerHTML = '<i class="fas fa-download mr-2"></i>Download Results';
+            validateForm();
+        }, 3000);
+    });
+});
+</script>
 
 <style>
 /* Additional dashboard-specific styles */
@@ -802,6 +1068,16 @@ setTimeout(function() {
 .progress-bar {
     transition: width 0.5s ease-in-out;
 }
+
+.bg-red-100 { background-color: #fee2e2; }
+.text-red-800 { color: #991b1b; }
+.bg-yellow-100 { background-color: #fefcbf; }
+.text-yellow-800 { color: #854d0e; }
+.bg-green-100 { background-color: #d1fae5; }
+.text-green-800 { color: #065f46; }
+.bg-blue-100 { background-color: #dbeafe; }
+.text-blue-800 { color: #1e40af; }
+
 
 /* Mobile responsive enhancements */
 @media (max-width: 640px) {
